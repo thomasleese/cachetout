@@ -2,21 +2,23 @@ import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
-CREATE_TABLE_SQL = """
-    CREATE TABLE IF NOT EXISTS cache(
-        key BLOB PRIMARY KEY NOT NULL,
-        value BLOB NOT NULL,
-        expires_at TIMESTAMP
-    )
-"""
+from .abc import Backend
 
 
-class SQLiteBackend:
+class SQLiteBackend(Backend):
+    create_table_sql = """
+                       CREATE TABLE IF NOT EXISTS cache(
+                           key BLOB PRIMARY KEY NOT NULL,
+                           value BLOB NOT NULL,
+                           expires_at TIMESTAMP
+                       )
+                       """
+
     def __init__(self, *, path: Path):
         self.connection = sqlite3.connect(path)
         self.cursor = self.connection.cursor()
 
-        self.cursor.execute(CREATE_TABLE_SQL)
+        self.cursor.execute(self.create_table_sql)
         self.connection.commit()
 
     def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None:

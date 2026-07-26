@@ -6,6 +6,7 @@ from pathlib import Path
 import pytest
 from freezegun import freeze_time
 
+from cachetout.backends.abc import Backend
 from cachetout.backends.memory import MemoryBackend
 from cachetout.backends.sqlite import SQLiteBackend
 
@@ -23,11 +24,11 @@ BACKENDS = {"memory": memory_backend_generator, "sqlite": sqlite_backend_generat
 
 
 @pytest.fixture(params=BACKENDS.values(), ids=list(BACKENDS.keys()))
-def backend(request):
+def backend(request) -> Generator[Backend]:
     yield from request.param()
 
 
-def test_get_set_delete(backend) -> None:
+def test_get_set_delete(backend: Backend) -> None:
     assert backend.get(b"key", default=b"default") == b"default"
 
     backend.set(b"key", b"value")
@@ -39,7 +40,7 @@ def test_get_set_delete(backend) -> None:
     assert backend.get(b"key") is None
 
 
-def test_expiration(backend) -> None:
+def test_expiration(backend: Backend) -> None:
     with freeze_time("2020-01-01 12:00:00"):
         backend.set(
             b"key", b"value", expires_at=datetime(2020, 1, 1, 12, 5, tzinfo=UTC)

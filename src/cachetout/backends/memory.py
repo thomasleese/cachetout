@@ -1,8 +1,10 @@
 from datetime import UTC, datetime
 from threading import Lock
 
+from .abc import Backend
 
-class MemoryBackend:
+
+class MemoryBackend(Backend):
     def __init__(self):
         self._lock = Lock()
         self._data: dict[bytes, bytes] = {}
