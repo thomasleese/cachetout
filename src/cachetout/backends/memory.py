@@ -18,7 +18,7 @@ class MemoryBackend(Backend):
                 expires_at = self._expirations[key]
                 if expires_at < datetime.now(tz=UTC):
                     self._delete(key)
-                    value = None
+                    value = default
             except KeyError:
                 pass
 

@@ -34,7 +34,7 @@ class SQLiteBackend(Backend):
             expires_at_isoformat
         ) < datetime.now(tz=UTC):
             self.delete(key)
-            return None
+            return default
 
         return value
 
