@@ -5,11 +5,10 @@ import pytest
 from cachetout.backends.memory import MemoryBackend
 from cachetout.cache import Cache
 
-backend = MemoryBackend()
-
 
 @pytest.fixture
 def cache() -> Cache:
+    backend = MemoryBackend()
     return Cache("cache", backend=backend)
 
 
