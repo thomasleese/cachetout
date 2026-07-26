@@ -1,7 +1,7 @@
 [project]
 name = "cachetout"
 version = "0.1.0"
-description = "Add your description here"
+description = "A persistent, type-safe caching library for Python"
 readme = "README.md"
 authors = [
     { name = "Thomas Leese", email = "thomas@leese.io" }
