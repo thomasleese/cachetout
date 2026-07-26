@@ -1,19 +1,30 @@
+import tempfile
+from collections.abc import Generator
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 from freezegun import freeze_time
 
 from cachetout.backends.memory import MemoryBackend
+from cachetout.backends.sqlite import SQLiteBackend
 
 
-@pytest.fixture(params=[MemoryBackend], ids=["memory"])
-def backend_factory(request):
-    return request.param
+def memory_backend_generator() -> Generator[MemoryBackend]:
+    yield MemoryBackend()
 
 
-@pytest.fixture
-def backend(backend_factory):
-    return backend_factory()
+def sqlite_backend_generator() -> Generator[SQLiteBackend]:
+    with tempfile.TemporaryDirectory() as temporary_directory:
+        yield SQLiteBackend(path=Path(temporary_directory) / "test.db")
+
+
+BACKENDS = {"memory": memory_backend_generator, "sqlite": sqlite_backend_generator}
+
+
+@pytest.fixture(params=BACKENDS.values(), ids=list(BACKENDS.keys()))
+def backend(request):
+    yield from request.param()
 
 
 def test_get_set_delete(backend) -> None:
