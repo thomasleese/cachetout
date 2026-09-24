@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TypeVar
+from typing import TypeVar, cast, overload
 
 import msgspec.msgpack
 import platformdirs
@@ -9,6 +9,13 @@ from .backends.sqlite import SQLiteBackend
 
 K = TypeVar("K")
 V = TypeVar("V")
+
+
+class _DefaultRaise:
+    """Sentinel type for the default `default` value of Cache.get."""
+
+
+DEFAULT_RAISE = _DefaultRaise()
 
 
 class Cache:
@@ -35,13 +42,24 @@ class Cache:
         encoded_key = self.encoder.encode(key)
         del self.backend[encoded_key]
 
-    def get(self, key: K, *, type: type[V], default: V | None = None) -> V | None:
+    @overload
+    def get(self, key: K, *, type: type[V]) -> V: ...
+
+    @overload
+    def get(self, key: K, *, type: type[V], default: V) -> V: ...
+
+    def get(
+        self, key: K, *, type: type[V], default: V | _DefaultRaise = DEFAULT_RAISE
+    ) -> V:
         encoded_key = self.encoder.encode(key)
 
         try:
             value = self.backend[encoded_key]
         except KeyError:
-            return default
+            if default is DEFAULT_RAISE:
+                raise
+            else:
+                return cast(V, default)
         else:
             return msgspec.msgpack.decode(value, type=type)
 
