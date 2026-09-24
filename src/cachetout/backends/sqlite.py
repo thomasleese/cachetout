@@ -22,21 +22,16 @@ class SQLiteBackend(Backend):
         self.connection.commit()
 
     def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None:
-        self.cursor.execute("SELECT value, expires_at FROM cache WHERE key = ?", (key,))
+        sql = "SELECT value FROM cache WHERE key = ? AND (expires_at IS NULL OR expires_at >= ?)"
+        parameters = (key, datetime.now(tz=UTC).isoformat())
+
+        self.cursor.execute(sql, parameters)
         row = self.cursor.fetchone()
 
         if row is None:
             return default
 
-        value, expires_at_isoformat = row
-
-        if expires_at_isoformat is not None and datetime.fromisoformat(
-            expires_at_isoformat
-        ) < datetime.now(tz=UTC):
-            self.delete(key)
-            return default
-
-        return value
+        return row[0]
 
     def set(
         self, key: bytes, value: bytes, *, expires_at: datetime | None = None
