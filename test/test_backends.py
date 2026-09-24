@@ -36,7 +36,7 @@ def test_get_set_delete(backend: Backend) -> None:
     assert b"key" in backend
     assert backend.get(b"key") == b"value"
 
-    assert backend.delete(b"key")
+    del backend[b"key"]
 
     assert b"key" not in backend
     assert backend.get(b"key") is None

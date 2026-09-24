@@ -28,6 +28,16 @@ class SQLiteBackend(Backend):
         self.cursor.execute(sql, parameters)
         return self.cursor.fetchone() is not None
 
+    def __delitem__(self, key: bytes) -> None:
+        sql = "DELETE FROM cache WHERE key = ?"
+        parameters = (key,)
+
+        self.cursor.execute(sql, parameters)
+        self.connection.commit()
+
+        if self.cursor.rowcount == 0:
+            raise KeyError(key)
+
     def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None:
         sql = "SELECT value FROM cache WHERE key = ? AND (expires_at IS NULL OR expires_at >= ?)"
         parameters = (key, datetime.now(tz=UTC).isoformat())
@@ -56,8 +66,3 @@ class SQLiteBackend(Backend):
             (key, value, expires_at_isoformat, value, expires_at_isoformat),
         )
         self.connection.commit()
-
-    def delete(self, key: bytes) -> bool:
-        self.cursor.execute("DELETE FROM cache WHERE key = ?", (key,))
-        self.connection.commit()
-        return self.cursor.rowcount > 0

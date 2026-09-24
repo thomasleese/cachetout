@@ -38,7 +38,7 @@ def test_get_set_delete(cache: Cache, key, value) -> None:
     assert key in cache
     assert cache.get(key, type=_type) == value
 
-    assert cache.delete(key)
+    del cache[key]
 
     assert key not in cache
     assert cache.get(key, type=_type) is None

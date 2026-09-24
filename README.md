@@ -26,7 +26,7 @@ user = cache.get("user:123", type=dict)
 print(user)  # {'name': 'Alice', 'age': 30}
 
 # Delete a value
-cache.delete("user:123")
+del cache["user:123"]
 ```
 
 ### `cache` decorator
