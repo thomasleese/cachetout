@@ -33,10 +33,12 @@ def test_get_set_delete(backend: Backend) -> None:
 
     backend.set(b"key", b"value")
 
+    assert b"key" in backend
     assert backend.get(b"key") == b"value"
 
     assert backend.delete(b"key")
 
+    assert b"key" not in backend
     assert backend.get(b"key") is None
 
 
@@ -47,12 +49,15 @@ def test_expiration(backend: Backend) -> None:
         backend.set(b"key", b"value", expires_at=expires_at)
 
     with freeze_time("2020-01-01 12:04:59"):
+        assert b"key" in backend
         assert backend.get(b"key") == b"value"
 
     with freeze_time("2020-01-01 12:05:00"):
+        assert b"key" in backend
         assert backend.get(b"key") == b"value"
 
     with freeze_time("2020-01-01 12:05:01"):
+        assert b"key" not in backend
         assert backend.get(b"key") is None
 
 

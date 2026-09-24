@@ -10,6 +10,20 @@ class MemoryBackend(Backend):
         self._data: dict[bytes, bytes] = {}
         self._expirations: dict[bytes, datetime] = {}
 
+    def __contains__(self, key: bytes) -> bool:
+        with self._lock:
+            try:
+                self._data[key]
+            except KeyError:
+                return False
+            else:
+                try:
+                    expires_at = self._expirations[key]
+                except KeyError:
+                    return True
+                else:
+                    return expires_at >= datetime.now(tz=UTC)
+
     def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None:
         with self._lock:
             value = self._data.get(key, default)
