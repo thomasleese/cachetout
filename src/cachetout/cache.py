@@ -38,11 +38,12 @@ class Cache:
     def get(self, key: K, *, type: type[V], default: V | None = None) -> V | None:
         encoded_key = self.encoder.encode(key)
 
-        value = self.backend.get(encoded_key)
-        if value is None:
+        try:
+            value = self.backend[encoded_key]
+        except KeyError:
             return default
-
-        return msgspec.msgpack.decode(value, type=type)
+        else:
+            return msgspec.msgpack.decode(value, type=type)
 
     def set(self, key: K, value: V, *, expires_at: datetime | None = None) -> None:
         encoded_key = self.encoder.encode(key)

@@ -29,9 +29,9 @@ class MemoryBackend(Backend):
             del self._data[key]
             self._delete_expiration(key)
 
-    def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None:
+    def __getitem__(self, key: bytes) -> bytes:
         with self._lock:
-            value = self._data.get(key, default)
+            value = self._data[key]
 
             try:
                 expires_at = self._expirations[key]
@@ -39,9 +39,9 @@ class MemoryBackend(Backend):
                 pass
             else:
                 if expires_at < datetime.now(tz=UTC):
-                    value = default
+                    raise KeyError(key)
 
-        return value
+            return value
 
     def set(
         self, key: bytes, value: bytes, *, expires_at: datetime | None = None

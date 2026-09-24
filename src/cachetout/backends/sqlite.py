@@ -38,7 +38,7 @@ class SQLiteBackend(Backend):
         if self.cursor.rowcount == 0:
             raise KeyError(key)
 
-    def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None:
+    def __getitem__(self, key: bytes) -> bytes:
         sql = "SELECT value FROM cache WHERE key = ? AND (expires_at IS NULL OR expires_at >= ?)"
         parameters = (key, datetime.now(tz=UTC).isoformat())
 
@@ -46,9 +46,9 @@ class SQLiteBackend(Backend):
         row = self.cursor.fetchone()
 
         if row is None:
-            return default
-
-        return row[0]
+            raise KeyError(key)
+        else:
+            return row[0]
 
     def set(
         self, key: bytes, value: bytes, *, expires_at: datetime | None = None
