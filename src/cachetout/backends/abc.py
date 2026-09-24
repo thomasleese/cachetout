@@ -4,6 +4,9 @@ from datetime import datetime
 
 class Backend(ABC):
     @abstractmethod
+    def __contains__(self, key: bytes) -> bool: ...
+
+    @abstractmethod
     def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None: ...
 
     @abstractmethod

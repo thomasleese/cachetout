@@ -21,6 +21,13 @@ class SQLiteBackend(Backend):
         self.cursor.execute(self.create_table_sql)
         self.connection.commit()
 
+    def __contains__(self, key: bytes) -> bool:
+        sql = "SELECT 1 FROM cache WHERE key = ? AND (expires_at IS NULL OR expires_at >= ?)"
+        parameters = (key, datetime.now(tz=UTC).isoformat())
+
+        self.cursor.execute(sql, parameters)
+        return self.cursor.fetchone() is not None
+
     def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None:
         sql = "SELECT value FROM cache WHERE key = ? AND (expires_at IS NULL OR expires_at >= ?)"
         parameters = (key, datetime.now(tz=UTC).isoformat())
