@@ -8,8 +8,6 @@ from cachetout.backends.abc import Backend
 
 from .cache import Cache
 
-DEFAULT = object()
-
 
 @dataclass
 class Key:
@@ -31,8 +29,9 @@ def cache(*args, **kwargs):
         def wrapper(*args, **kwargs):
             key = Key(args, kwargs)
 
-            value = cache.get(key, default=DEFAULT, type=sig.return_annotation)
-            if value is DEFAULT:
+            try:
+                return cache.get(key, type=sig.return_annotation)
+            except KeyError:
                 value = f(*args, **kwargs)
 
                 if expires_in is not None:
@@ -42,7 +41,7 @@ def cache(*args, **kwargs):
 
                 cache.set(key, value, expires_at=expires_at)
 
-            return value
+                return value
 
         return wrapper
 

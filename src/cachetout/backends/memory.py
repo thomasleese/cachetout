@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from threading import Lock
 
-from .abc import Backend
+from .abc import Backend, Value
 
 
 class MemoryBackend(Backend):
@@ -29,9 +29,9 @@ class MemoryBackend(Backend):
             del self._data[key]
             self._delete_expiration(key)
 
-    def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None:
+    def __getitem__(self, key: bytes) -> bytes:
         with self._lock:
-            value = self._data.get(key, default)
+            value = self._data[key]
 
             try:
                 expires_at = self._expirations[key]
@@ -39,16 +39,15 @@ class MemoryBackend(Backend):
                 pass
             else:
                 if expires_at < datetime.now(tz=UTC):
-                    value = default
+                    raise KeyError(key)
 
-        return value
+            return value
 
-    def set(
-        self, key: bytes, value: bytes, *, expires_at: datetime | None = None
-    ) -> None:
+    def __setitem__(self, key: bytes, value: Value) -> None:
         with self._lock:
-            self._data[key] = value
+            self._data[key] = value[0]
 
+            expires_at = value[1]
             if expires_at is not None:
                 self._expirations[key] = expires_at
             else:

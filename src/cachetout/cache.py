@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import TypeVar
+from typing import TypeVar, cast, overload
 
 import msgspec.msgpack
 import platformdirs
@@ -9,6 +9,13 @@ from .backends.sqlite import SQLiteBackend
 
 K = TypeVar("K")
 V = TypeVar("V")
+
+
+class _DefaultRaise:
+    """Sentinel type for the default `default` value of Cache.get."""
+
+
+DEFAULT_RAISE = _DefaultRaise()
 
 
 class Cache:
@@ -35,17 +42,29 @@ class Cache:
         encoded_key = self.encoder.encode(key)
         del self.backend[encoded_key]
 
-    def get(self, key: K, *, type: type[V], default: V | None = None) -> V | None:
+    @overload
+    def get(self, key: K, *, type: type[V]) -> V: ...
+
+    @overload
+    def get(self, key: K, *, type: type[V], default: V) -> V: ...
+
+    def get(
+        self, key: K, *, type: type[V], default: V | _DefaultRaise = DEFAULT_RAISE
+    ) -> V:
         encoded_key = self.encoder.encode(key)
 
-        value = self.backend.get(encoded_key)
-        if value is None:
-            return default
-
-        return msgspec.msgpack.decode(value, type=type)
+        try:
+            value = self.backend[encoded_key]
+        except KeyError:
+            if default is DEFAULT_RAISE:
+                raise
+            else:
+                return cast(V, default)
+        else:
+            return msgspec.msgpack.decode(value, type=type)
 
     def set(self, key: K, value: V, *, expires_at: datetime | None = None) -> None:
         encoded_key = self.encoder.encode(key)
         encoded_value = self.encoder.encode(value)
 
-        self.backend.set(encoded_key, encoded_value, expires_at=expires_at)
+        self.backend[encoded_key] = (encoded_value, expires_at)

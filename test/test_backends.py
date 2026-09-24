@@ -29,43 +29,33 @@ def backend(request) -> Generator[Backend]:
 
 
 def test_get_set_delete(backend: Backend) -> None:
-    assert backend.get(b"key", default=b"default") == b"default"
-
-    backend.set(b"key", b"value")
+    backend[b"key"] = (b"value", None)
 
     assert b"key" in backend
-    assert backend.get(b"key") == b"value"
+    assert backend[b"key"] == b"value"
 
     del backend[b"key"]
 
     assert b"key" not in backend
-    assert backend.get(b"key") is None
+    with pytest.raises(KeyError):
+        backend[b"key"]
 
 
 def test_expiration(backend: Backend) -> None:
     expires_at = datetime(2020, 1, 1, 12, 5, tzinfo=UTC)
 
     with freeze_time("2020-01-01 12:00:00"):
-        backend.set(b"key", b"value", expires_at=expires_at)
+        backend[b"key"] = (b"value", expires_at)
 
     with freeze_time("2020-01-01 12:04:59"):
         assert b"key" in backend
-        assert backend.get(b"key") == b"value"
+        assert backend[b"key"] == b"value"
 
     with freeze_time("2020-01-01 12:05:00"):
         assert b"key" in backend
-        assert backend.get(b"key") == b"value"
+        assert backend[b"key"] == b"value"
 
     with freeze_time("2020-01-01 12:05:01"):
         assert b"key" not in backend
-        assert backend.get(b"key") is None
-
-
-def test_expiration_default(backend: Backend) -> None:
-    expires_at = datetime(2020, 1, 1, 12, 5, tzinfo=UTC)
-
-    with freeze_time("2020-01-01 12:00:00"):
-        backend.set(b"key", b"value", expires_at=expires_at)
-
-    with freeze_time("2020-01-01 12:05:01"):
-        assert backend.get(b"key", default=b"default") == b"default"
+        with pytest.raises(KeyError):
+            backend[b"key"]

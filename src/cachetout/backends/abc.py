@@ -1,6 +1,8 @@
 from abc import ABC, abstractmethod
 from datetime import datetime
 
+type Value = tuple[bytes, datetime | None]
+
 
 class Backend(ABC):
     @abstractmethod
@@ -10,9 +12,7 @@ class Backend(ABC):
     def __delitem__(self, key: bytes) -> None: ...
 
     @abstractmethod
-    def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None: ...
+    def __getitem__(self, key: bytes) -> bytes: ...
 
     @abstractmethod
-    def set(
-        self, key: bytes, value: bytes, *, expires_at: datetime | None = None
-    ) -> None: ...
+    def __setitem__(self, key: bytes, value: Value) -> None: ...

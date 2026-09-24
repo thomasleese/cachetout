@@ -9,6 +9,8 @@
   the value.
 - Deleting keys now requires the use of the `del` statement and raises a `KeyError` if
   the key doesn't exist to delete.
+- `Cache.get` now raises a `KeyError` if the key doesn’t exist, unless a `default` is
+  passed in to the call.
 
 ## v0.1.0
 

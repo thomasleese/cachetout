@@ -31,7 +31,11 @@ class DummyDataclass:
 def test_get_set_delete(cache: Cache, key, value) -> None:
     _type = type(value)
 
-    assert cache.get(key, default="default", type=_type) == "default"
+    with pytest.raises(KeyError):
+        cache.get(key, type=_type)
+
+    assert cache.get(key, type=_type, default=None) is None
+    assert cache.get(key, type=_type, default="default") == "default"
 
     cache.set(key, value)
 
@@ -41,4 +45,4 @@ def test_get_set_delete(cache: Cache, key, value) -> None:
     del cache[key]
 
     assert key not in cache
-    assert cache.get(key, type=_type) is None
+    assert cache.get(key, type=_type, default=None) is None

@@ -2,7 +2,7 @@ import sqlite3
 from datetime import UTC, datetime
 from pathlib import Path
 
-from .abc import Backend
+from .abc import Backend, Value
 
 
 class SQLiteBackend(Backend):
@@ -38,7 +38,7 @@ class SQLiteBackend(Backend):
         if self.cursor.rowcount == 0:
             raise KeyError(key)
 
-    def get(self, key: bytes, *, default: bytes | None = None) -> bytes | None:
+    def __getitem__(self, key: bytes) -> bytes:
         sql = "SELECT value FROM cache WHERE key = ? AND (expires_at IS NULL OR expires_at >= ?)"
         parameters = (key, datetime.now(tz=UTC).isoformat())
 
@@ -46,23 +46,26 @@ class SQLiteBackend(Backend):
         row = self.cursor.fetchone()
 
         if row is None:
-            return default
+            raise KeyError(key)
+        else:
+            return row[0]
 
-        return row[0]
+    def __setitem__(self, key: bytes, value: Value) -> None:
+        expires_at_isoformat = value[1].isoformat() if value[1] is not None else None
 
-    def set(
-        self, key: bytes, value: bytes, *, expires_at: datetime | None = None
-    ) -> None:
-        expires_at_isoformat = (
-            expires_at.isoformat() if expires_at is not None else None
-        )
-
-        self.cursor.execute(
-            """
+        sql = """
             INSERT INTO cache (key, value, expires_at)
             VALUES (?, ?, ?)
             ON CONFLICT(key) DO UPDATE SET value = ?, expires_at = ?
-            """,
-            (key, value, expires_at_isoformat, value, expires_at_isoformat),
+        """
+
+        parameters = (
+            key,
+            value[0],
+            expires_at_isoformat,
+            value[0],
+            expires_at_isoformat,
         )
+
+        self.cursor.execute(sql, parameters)
         self.connection.commit()
