@@ -7,6 +7,8 @@
 - The `in` and `not in` operator is now supported on both the backend classes and the
   `Cache` class, providing a faster way of determining presence as it avoids decoding
   the value.
+- Deleting keys now requires the use of the `del` statement and raises a `KeyError` if
+  the key doesn't exist to delete.
 
 ## v0.1.0
 

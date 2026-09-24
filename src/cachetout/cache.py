@@ -31,6 +31,10 @@ class Cache:
         encoded_key = self.encoder.encode(key)
         return encoded_key in self.backend
 
+    def __delitem__(self, key: K) -> None:
+        encoded_key = self.encoder.encode(key)
+        del self.backend[encoded_key]
+
     def get(self, key: K, *, type: type[V], default: V | None = None) -> V | None:
         encoded_key = self.encoder.encode(key)
 
@@ -45,7 +49,3 @@ class Cache:
         encoded_value = self.encoder.encode(value)
 
         self.backend.set(encoded_key, encoded_value, expires_at=expires_at)
-
-    def delete(self, key: K) -> bool:
-        encoded_key = self.encoder.encode(key)
-        return self.backend.delete(encoded_key)
