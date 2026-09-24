@@ -27,6 +27,10 @@ class Cache:
 
         self.encoder = msgspec.msgpack.Encoder()
 
+    def __contains__(self, key: K) -> bool:
+        encoded_key = self.encoder.encode(key)
+        return encoded_key in self.backend
+
     def get(self, key: K, *, type: type[V], default: V | None = None) -> V | None:
         encoded_key = self.encoder.encode(key)
 
