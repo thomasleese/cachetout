@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## v0.2.0
 
 - Cache keys are no longer deleted from the store on retrieval if they’ve expired.
   This ensures that a read operation will never perform a write operation.
