@@ -35,11 +35,13 @@ cache.delete("user:123")
 from datetime import timedelta
 from cachetout import cache
 
+
 @cache(expires_in=timedelta(hours=1))
 def fetch_user_data(user_id: int) -> dict:
     # This function will only be called once per user_id per hour
     print("Fetching data from API...")
     return {"id": user_id, "data": "..."}
+
 
 # First call: fetches from source
 result1 = fetch_user_data(123)
@@ -56,11 +58,13 @@ The library uses [msgspec] for serialisation, which respects the Python type hin
 from dataclasses import dataclass
 from cachetout import Cache
 
+
 @dataclass
 class User:
     id: int
     name: str
     email: str
+
 
 cache = Cache("user_cache")
 
@@ -87,6 +91,7 @@ cache = Cache("temp_cache")
 
 # Expire in 1 hour
 cache.set("temp_data", "value", expires_at=datetime.now(tz=UTC) + timedelta(hours=1))
+
 
 # Or use timedelta with decorator
 @cache(expires_in=timedelta(minutes=30))
