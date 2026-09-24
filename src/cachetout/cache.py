@@ -49,4 +49,4 @@ class Cache:
         encoded_key = self.encoder.encode(key)
         encoded_value = self.encoder.encode(value)
 
-        self.backend.set(encoded_key, encoded_value, expires_at=expires_at)
+        self.backend[encoded_key] = (encoded_value, expires_at)

@@ -29,7 +29,7 @@ def backend(request) -> Generator[Backend]:
 
 
 def test_get_set_delete(backend: Backend) -> None:
-    backend.set(b"key", b"value")
+    backend[b"key"] = (b"value", None)
 
     assert b"key" in backend
     assert backend[b"key"] == b"value"
@@ -45,7 +45,7 @@ def test_expiration(backend: Backend) -> None:
     expires_at = datetime(2020, 1, 1, 12, 5, tzinfo=UTC)
 
     with freeze_time("2020-01-01 12:00:00"):
-        backend.set(b"key", b"value", expires_at=expires_at)
+        backend[b"key"] = (b"value", expires_at)
 
     with freeze_time("2020-01-01 12:04:59"):
         assert b"key" in backend

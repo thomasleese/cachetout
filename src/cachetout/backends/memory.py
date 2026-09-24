@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from threading import Lock
 
-from .abc import Backend
+from .abc import Backend, Value
 
 
 class MemoryBackend(Backend):
@@ -43,12 +43,11 @@ class MemoryBackend(Backend):
 
             return value
 
-    def set(
-        self, key: bytes, value: bytes, *, expires_at: datetime | None = None
-    ) -> None:
+    def __setitem__(self, key: bytes, value: Value) -> None:
         with self._lock:
-            self._data[key] = value
+            self._data[key] = value[0]
 
+            expires_at = value[1]
             if expires_at is not None:
                 self._expirations[key] = expires_at
             else:
