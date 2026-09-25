@@ -9,7 +9,7 @@ project = "cachetout"
 copyright = "Thomas Leese"
 author = "Thomas Leese <thomas@leese.io>"
 
-release = "0.3.0"
+release = "0.3.1"
 
 extensions = [
     "sphinx.ext.autodoc",

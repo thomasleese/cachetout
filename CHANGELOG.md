@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.1
+
+- API documentation is now published online alongside each release.
+
 ## v0.3.0
 
 - API documentation is now included for the public classes, functions and methods.
