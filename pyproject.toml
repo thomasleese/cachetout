@@ -1,6 +1,6 @@
 [project]
 name = "cachetout"
-version = "0.3.0"
+version = "0.3.1"
 description = "A persistent, type-safe caching library for Python"
 readme = "README.md"
 authors = [
