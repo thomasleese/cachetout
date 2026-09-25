@@ -6,6 +6,8 @@ from .abc import Backend, Value
 
 
 class SQLiteBackend(Backend):
+    """A backend that stores values in a SQLite database file."""
+
     create_table_sql = """
                        CREATE TABLE IF NOT EXISTS cache(
                            key BLOB PRIMARY KEY NOT NULL,
@@ -15,6 +17,7 @@ class SQLiteBackend(Backend):
                        """
 
     def __init__(self, *, path: Path):
+        """Create a backend connected to the database at the given path."""
         self.connection = sqlite3.connect(path)
         self.cursor = self.connection.cursor()
 
@@ -22,6 +25,7 @@ class SQLiteBackend(Backend):
         self.connection.commit()
 
     def __contains__(self, key: bytes) -> bool:
+        """Return whether the backend contains an unexpired value for the key."""
         sql = "SELECT 1 FROM cache WHERE key = ? AND (expires_at IS NULL OR expires_at >= ?)"
         parameters = (key, datetime.now(tz=UTC).isoformat())
 
@@ -29,6 +33,10 @@ class SQLiteBackend(Backend):
         return self.cursor.fetchone() is not None
 
     def __delitem__(self, key: bytes) -> None:
+        """Remove the given key from the backend.
+
+        Raises `KeyError` if the key is missing.
+        """
         sql = "DELETE FROM cache WHERE key = ?"
         parameters = (key,)
 
@@ -39,6 +47,10 @@ class SQLiteBackend(Backend):
             raise KeyError(key)
 
     def __getitem__(self, key: bytes) -> bytes:
+        """Return the value for the given key.
+
+        Raises `KeyError` if the key is missing or expired.
+        """
         sql = "SELECT value FROM cache WHERE key = ? AND (expires_at IS NULL OR expires_at >= ?)"
         parameters = (key, datetime.now(tz=UTC).isoformat())
 
@@ -51,6 +63,7 @@ class SQLiteBackend(Backend):
             return row[0]
 
     def __setitem__(self, key: bytes, value: Value) -> None:
+        """Store the given value against the given key."""
         expires_at_isoformat = value[1].isoformat() if value[1] is not None else None
 
         sql = """

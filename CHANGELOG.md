@@ -1,5 +1,9 @@
 # Changelog
 
+## v0.3.0
+
+- API documentation is now included for the public classes, functions and methods.
+
 ## v0.2.0
 
 - Cache keys are no longer deleted from the store on retrieval if they’ve expired.

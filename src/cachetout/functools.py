@@ -11,11 +11,20 @@ from .cache import Cache
 
 @dataclass
 class Key:
+    """A cache key made from a function's arguments."""
+
     args: tuple[Any]
     kwargs: dict[str, Any]
 
 
 def cache(*args, **kwargs):
+    """Cache a function's return values.
+
+    Can be used bare (`@cache`) or with arguments (`@cache(name=...)`,
+    `app_name=...`, `backend=...`, `expires_in=...`). Values are looked up
+    by the function's arguments and decoded as the function's return
+    annotation.
+    """
     name: str | None = kwargs.get("name")
     app_name: str | None = kwargs.get("app_name")
     backend: Backend | None = kwargs.get("backend")
