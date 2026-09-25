@@ -7,7 +7,7 @@ on:
 
 jobs:
   package:
-    name: Build and publish package
+    name: Package
     runs-on: ubuntu-latest
 
     environment:
@@ -38,7 +38,7 @@ jobs:
         run: uv publish
 
   documentation:
-    name: Build and upload documentation
+    name: Documentation
     runs-on: ubuntu-latest
 
     environment:
