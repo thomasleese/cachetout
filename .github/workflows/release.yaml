@@ -6,16 +6,16 @@ on:
       - v*
 
 jobs:
-  build-publish:
-    name: Build and publish
+  package:
+    name: Build and publish package
     runs-on: ubuntu-latest
 
     environment:
       name: pypi
 
     permissions:
-      id-token: write
       contents: read
+      id-token: write
 
     steps:
       - name: Checkout
@@ -36,3 +36,66 @@ jobs:
 
       - name: Publish
         run: uv publish
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: Build documentation
+        run: uv run sphinx-build -b html docs docs/_build/html
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_build/html
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
+
+  documentation:
+    name: Build and upload documentation
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    permissions:
+      contents: read
+      id-token: write
+      pages: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version-file: .python-version
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@08807647e7069bb48b6ef5acd8ec9567f424441b # v8.1.0
+        with:
+          enable-cache: true
+
+      - name: Install dependencies
+        run: uv sync --locked --all-extras --dev
+
+      - name: Build documentation
+        run: uv run sphinx-build -b html docs docs/_build/html
+
+      - name: Configure GitHub Pages
+        uses: actions/configure-pages@v5
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/_build/html
+
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v5
